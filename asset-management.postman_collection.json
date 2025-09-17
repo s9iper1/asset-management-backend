@@ -1,0 +1,221 @@
+{
+  "info": {
+    "name": "Asset Management API",
+    "_postman_id": "4b3798cc-asset-mgmt",
+    "description": "Postman collection for Asset Management Backend (Auth + Properties)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user1@example.com\",\n  \"name\": \"User One\",\n  \"password\": \"pass1234\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/register/", "host": ["{{base_url}}"], "path": ["api", "auth", "register", ""] }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"pass1234\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/token/", "host": ["{{base_url}}"], "path": ["api", "auth", "token", ""] }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh\": \"<refresh_token_here>\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/token/refresh/", "host": ["{{base_url}}"], "path": ["api", "auth", "token", "refresh", ""] }
+          }
+        },
+        {
+          "name": "Profile",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/api/auth/profile/", "host": ["{{base_url}}"], "path": ["api", "auth", "profile", ""] }
+          }
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"old_password\": \"pass1234\",\n  \"new_password\": \"newpass456\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/api/auth/change-password/", "host": ["{{base_url}}"], "path": ["api", "auth", "change-password", ""] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Properties",
+      "item": [
+        {
+          "name": "List Properties",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", ""]
+            }
+          }
+        },
+        {
+          "name": "Filter by Price Range",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/?price_min=100000&price_max=500000",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", ""],
+              "query": [
+                { "key": "price_min", "value": "100000" },
+                { "key": "price_max", "value": "500000" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter by Purchase Date",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/?purchase_date_from=2023-01-01&purchase_date_to=2023-12-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", ""],
+              "query": [
+                { "key": "purchase_date_from", "value": "2023-01-01" },
+                { "key": "purchase_date_to", "value": "2023-12-31" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter by Created Date",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/?created_from=2024-01-01",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", ""],
+              "query": [
+                { "key": "created_from", "value": "2024-01-01" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Property",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "title", "value": "My House", "type": "text" },
+                { "key": "address", "value": "123 Main St", "type": "text" },
+                { "key": "property_type", "value": "house", "type": "text" },
+                { "key": "price", "value": "250000", "type": "text" },
+                { "key": "image", "type": "file", "src": [] }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", ""]
+            }
+          }
+        },
+        {
+          "name": "Get Property by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Update Property",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated House\",\n  \"address\": \"456 Market St\",\n  \"property_type\": \"apartment\",\n  \"price\": 300000\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "1", ""]
+            }
+          }
+        },
+        {
+          "name": "Delete Property",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/1/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "properties", "1", ""]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "access_token", "value": "" }
+  ]
+}
