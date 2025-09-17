@@ -1,6 +1,7 @@
 django
 djangorestframework
 djangorestframework-simplejwt
+django-filter
 mysqlclient
 python-dotenv
 django-cors-headers
