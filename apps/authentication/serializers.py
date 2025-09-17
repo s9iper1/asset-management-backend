@@ -3,13 +3,13 @@ from django.contrib.auth.password_validation import validate_password
 from .models import User
 
 
-class RegisterSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     class Meta:
         model = User
-        fields = ("id", "email", "name", "password", "role")
-        read_only_fields = ("role",)  # users can't set their role at signup
+        fields = ("id", "email", "name", "password")
+        read_only_fields = ()
 
     def create(self, validated_data):
         user = User.objects.create_user(
