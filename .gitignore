@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Django / general
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+static/
+
+# MySQL dumps
+*.sql
+*.sql.gz
+
+# IDEs and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Byte-compiled / cache
+*.cache
+*.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment
+.env
+.env.*.local
+
+# Docker
+__MACOSX
+docker-compose.override.yml
+*.pid
+
+# OS-specific
+.DS_Store
+Thumbs.db
