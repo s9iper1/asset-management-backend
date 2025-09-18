@@ -1,10 +1,10 @@
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
-from .serializers import ChangePasswordSerializer, UserSerializer
+from .serializers import ChangePasswordSerializer, RegisterSerializer, UserSerializer
 
 
 class RegisterView(generics.CreateAPIView):
-    serializer_class = UserSerializer
+    serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
 

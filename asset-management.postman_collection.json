@@ -54,6 +54,25 @@
           }
         },
         {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{access_token}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/profile/",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "profile", ""]
+            }
+          }
+        },
+        {
           "name": "Change Password",
           "request": {
             "method": "PUT",

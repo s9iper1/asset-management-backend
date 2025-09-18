@@ -3,7 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from .models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
+class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
 
     class Meta:
@@ -18,6 +18,18 @@ class UserSerializer(serializers.ModelSerializer):
             name=validated_data.get("name", ""),
         )
         return user
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ("id", "email", "name")
+        read_only_fields = ("id", "email",)
+
+    def update(self, instance, validated_data):
+        instance.name = validated_data.get("name", instance.name)
+        instance.save()
+        return instance
 
 
 class ChangePasswordSerializer(serializers.Serializer):
