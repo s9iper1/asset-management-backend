@@ -22,10 +22,14 @@ class Property(models.Model):
     )
     title = models.CharField(max_length=255)
     address = models.CharField(max_length=255)
-    property_type = models.CharField(max_length=20, choices=PropertyType.choices, default=PropertyType.OTHER)
+    property_type = models.CharField(
+        max_length=20, choices=PropertyType.choices, default=PropertyType.OTHER
+    )
     purchase_date = models.DateField(null=True, blank=True)
     price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
-    contract_type = models.CharField(max_length=20, choices=ContractType.choices, default=ContractType.NONE)
+    contract_type = models.CharField(
+        max_length=20, choices=ContractType.choices, default=ContractType.NONE
+    )
     available_from = models.DateField(null=True, blank=True)
     conditions = models.CharField(max_length=255, blank=True)
     contact = models.CharField(max_length=255, blank=True)
@@ -33,7 +37,12 @@ class Property(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     comment = models.TextField(blank=True)
     story = models.TextField(blank=True)
-    image = models.ImageField(upload_to="property_images/", null=True, blank=True)
+
+    # Featured image
+    image = models.ImageField(
+        upload_to="property_images/featured/", null=True, blank=True
+    )
+
     is_active = models.BooleanField(default=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
@@ -46,3 +55,17 @@ class Property(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.property_type})"
+
+
+class PropertyImage(models.Model):
+    property = models.ForeignKey(
+        Property, on_delete=models.CASCADE, related_name="images"
+    )
+    image = models.ImageField(upload_to="property_images/gallery/")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"Image for {self.property.title}"
