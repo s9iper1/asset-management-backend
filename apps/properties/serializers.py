@@ -3,6 +3,8 @@ from .models import Property
 
 
 class PropertySerializer(serializers.ModelSerializer):
+    image = serializers.ImageField(use_url=True, required=False, allow_null=True)
+
     class Meta:
         model = Property
         fields = "__all__"
