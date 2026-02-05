@@ -6,3 +6,11 @@ mysqlclient
 python-dotenv
 django-cors-headers
 Pillow
+
+# Phase 1 additions - AI & Async Processing
+openai
+celery
+redis
+django-celery-beat
+django-celery-results
+cryptography

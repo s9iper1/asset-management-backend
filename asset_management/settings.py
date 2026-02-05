@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from datetime import timedelta
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -43,8 +44,11 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
+    "django_celery_results",  # Phase 1
+    "django_celery_beat",      # Phase 1
     "apps.authentication",
     "apps.properties",
+    'django_extensions',
 ]
 
 AUTH_USER_MODEL = "authentication.User"
@@ -61,6 +65,7 @@ REST_FRAMEWORK = {
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    "django.middleware.locale.LocaleMiddleware",  # Phase 1: i18n
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -102,6 +107,10 @@ DATABASES = {
         "PORT": os.getenv("DB_PORT", "3306"),
         "OPTIONS": {
             "charset": "utf8mb4",
+            "init_command": (
+                "SET sql_mode='STRICT_TRANS_TABLES',"
+                "default_storage_engine=INNODB"
+            ),
         },
     }
 }
@@ -129,7 +138,12 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'en'
+LANGUAGES = [
+    ('en', 'English'),
+    ('cs', 'Czech'),
+]
+LOCALE_PATHS = [BASE_DIR / 'locale']
 
 TIME_ZONE = 'UTC'
 
@@ -153,10 +167,17 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+def env_int(name, default):
+    try:
+        return int(os.getenv(name, default))
+    except (TypeError, ValueError):
+        return default
+
+
 # JWT Configuration
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=os.getenv('JWT_ACCESS_TOKEN_LIFETIME', default=60)),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=os.getenv('JWT_REFRESH_TOKEN_LIFETIME', default=7)),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=env_int('JWT_ACCESS_TOKEN_LIFETIME', default=60)),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=env_int('JWT_REFRESH_TOKEN_LIFETIME', default=7)),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'UPDATE_LAST_LOGIN': True,
@@ -166,7 +187,11 @@ SIMPLE_JWT = {
 }
 
 # CORS
+CORS_ALLOW_HEADERS = list(default_headers)
 CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL_ORIGINS", "1") == "1"
+
+# CSRF
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
 
 # Email configuration
 EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.console.EmailBackend")
@@ -175,3 +200,21 @@ EMAIL_PORT = os.getenv("EMAIL_PORT", 587)
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", True)
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "noreply@yourdomain.com")
+
+# Celery Configuration (Phase 1)
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# OpenAI Configuration (Phase 1)
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+
+# Credit System Configuration (Phase 1)
+CREDIT_COST_AI_TEXT = float(os.getenv('CREDIT_COST_AI_TEXT', '1'))
+CREDIT_COST_AI_ADVISOR = float(os.getenv('CREDIT_COST_AI_ADVISOR', '1'))
+CREDIT_COST_VALUO_API = float(os.getenv('CREDIT_COST_VALUO_API', '1'))
+CREDIT_COST_REALMAN_API = float(os.getenv('CREDIT_COST_REALMAN_API', '1'))

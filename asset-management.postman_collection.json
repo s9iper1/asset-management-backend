@@ -2,89 +2,388 @@
   "info": {
     "name": "Asset Management API",
     "_postman_id": "4b3798cc-asset-mgmt",
-    "description": "Postman collection for Asset Management Backend (Auth + Properties)",
+    "description": "Complete API collection for Phase 1 backend with authentication, AI features, agencies, communications, and file mode.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "property_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
   "item": [
     {
-      "name": "Auth",
+      "name": "Authentication",
       "item": [
         {
           "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    console.log('User registered successfully');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"user1@example.com\",\n  \"name\": \"User One\",\n  \"password\": \"pass1234\"\n}"
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"name\": \"Test User\",\n    \"password\": \"SecurePass123!\",\n    \"password2\": \"SecurePass123!\"\n}"
             },
-            "url": { "raw": "{{base_url}}/api/auth/register/", "host": ["{{base_url}}"], "path": ["api", "auth", "register", ""] }
+            "url": {
+              "raw": "{{base_url}}/api/auth/register/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "register",
+                ""
+              ]
+            }
           }
         },
         {
-          "name": "Login",
+          "name": "Login (Get Tokens)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', jsonData.access);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh);",
+                  "    console.log('Tokens saved to collection variables');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"user1@example.com\",\n  \"password\": \"pass1234\"\n}"
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"SecurePass123!\"\n}"
             },
-            "url": { "raw": "{{base_url}}/api/auth/token/", "host": ["{{base_url}}"], "path": ["api", "auth", "token", ""] }
+            "url": {
+              "raw": "{{base_url}}/api/auth/token/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "token",
+                ""
+              ]
+            }
           }
         },
         {
           "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('access_token', jsonData.access);",
+                  "    console.log('Access token refreshed');",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refresh\": \"<refresh_token_here>\"\n}"
-            },
-            "url": { "raw": "{{base_url}}/api/auth/token/refresh/", "host": ["{{base_url}}"], "path": ["api", "auth", "token", "refresh", ""] }
-          }
-        },
-        {
-          "name": "Profile",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
-            "url": { "raw": "{{base_url}}/api/auth/profile/", "host": ["{{base_url}}"], "path": ["api", "auth", "profile", ""] }
-          }
-        },
-        {
-          "name": "Update Profile",
-          "request": {
-            "method": "PUT",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated User\"\n}"
+              "raw": "{\n    \"refresh\": \"{{refresh_token}}\"\n}"
             },
             "url": {
+              "raw": "{{base_url}}/api/auth/token/refresh/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "token",
+                "refresh",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
               "raw": "{{base_url}}/api/auth/profile/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "auth", "profile", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "profile",
+                ""
+              ]
             }
           }
         },
         {
           "name": "Change Password",
           "request": {
-            "method": "PUT",
+            "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"old_password\": \"pass1234\",\n  \"new_password\": \"newpass456\"\n}"
+              "raw": "{\n    \"old_password\": \"SecurePass123!\",\n    \"new_password\": \"NewSecurePass456!\",\n    \"new_password2\": \"NewSecurePass456!\"\n}"
             },
-            "url": { "raw": "{{base_url}}/api/auth/change-password/", "host": ["{{base_url}}"], "path": ["api", "auth", "change-password", ""] }
+            "url": {
+              "raw": "{{base_url}}/api/auth/change-password/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "auth",
+                "change-password",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "User Preferences & Credits",
+      "item": [
+        {
+          "name": "Get User Preferences",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/auth/preferences/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "auth",
+                "preferences",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User Preferences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"storage_mode\": \"cloud\",\n    \"preferred_language\": \"cs\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/auth/preferences/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "auth",
+                "preferences",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Credit Balance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/auth/credit-balance/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "auth",
+                "credit-balance",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Credit Transactions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/credit-transactions/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "credit-transactions",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Column Preferences",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/auth/column-preferences/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "auth",
+                "column-preferences",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Column Preferences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"visible_columns\": [\"title\", \"price\", \"address\", \"property_type\"],\n    \"column_order\": [\"title\", \"price\", \"address\", \"property_type\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/auth/column-preferences/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "auth",
+                "column-preferences",
+                ""
+              ]
+            }
           }
         }
       ]
@@ -97,103 +396,91 @@
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
               "raw": "{{base_url}}/api/properties/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", ""]
-            }
-          }
-        },
-        {
-          "name": "Filter by Price Range",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/properties/?price_min=100000&price_max=500000",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", ""],
-              "query": [
-                { "key": "price_min", "value": "100000" },
-                { "key": "price_max", "value": "500000" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Filter by Purchase Date",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/properties/?purchase_date_from=2023-01-01&purchase_date_to=2023-12-31",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", ""],
-              "query": [
-                { "key": "purchase_date_from", "value": "2023-01-01" },
-                { "key": "purchase_date_to", "value": "2023-12-31" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "Filter by Created Date",
-          "request": {
-            "method": "GET",
-            "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
-            ],
-            "url": {
-              "raw": "{{base_url}}/api/properties/?created_from=2024-01-01",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", ""],
-              "query": [
-                { "key": "created_from", "value": "2024-01-01" }
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                ""
               ]
             }
           }
         },
         {
           "name": "Create Property",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    var jsonData = pm.response.json();",
+                  "    pm.collectionVariables.set('property_id', jsonData.id);",
+                  "    console.log('Property ID saved:', jsonData.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
-              "mode": "formdata",
-              "formdata": [
-                { "key": "title", "value": "My House", "type": "text" },
-                { "key": "address", "value": "123 Main St", "type": "text" },
-                { "key": "property_type", "value": "house", "type": "text" },
-                { "key": "price", "value": "250000", "type": "text" },
-                { "key": "image", "type": "file", "src": [] }
-              ]
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Modern Apartment Prague\",\n    \"address\": \"Praha 1, Václavské náměstí\",\n    \"property_type\": \"apartment\",\n    \"price\": \"5000000\",\n    \"contract_type\": \"none\",\n    \"story\": \"Beautiful apartment in the heart of Prague\"\n}"
             },
             "url": {
               "raw": "{{base_url}}/api/properties/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", ""]
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                ""
+              ]
             }
           }
         },
         {
-          "name": "Get Property by ID",
+          "name": "Get Property Details",
           "request": {
             "method": "GET",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/properties/1/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", "1", ""]
+              "raw": "{{base_url}}/api/properties/{{property_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "{{property_id}}",
+                ""
+              ]
             }
           }
         },
@@ -202,39 +489,685 @@
           "request": {
             "method": "PUT",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"title\": \"Updated House\",\n  \"address\": \"456 Market St\",\n  \"property_type\": \"apartment\",\n  \"price\": 300000\n}"
+              "raw": "{\n    \"title\": \"Modern Apartment Prague - Updated\",\n    \"price\": \"5500000\"\n}"
             },
             "url": {
-              "raw": "{{base_url}}/api/properties/1/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", "1", ""]
+              "raw": "{{base_url}}/api/properties/{{property_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "{{property_id}}",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Agencies",
+      "item": [
+        {
+          "name": "List Agencies",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/agencies/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "agencies",
+                ""
+              ]
             }
           }
         },
         {
-          "name": "Delete Property",
+          "name": "Create Agency",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Premium Real Estate\",\n    \"email\": \"info@premium.cz\",\n    \"phone\": \"+420123456789\",\n    \"website\": \"https://premium.cz\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/agencies/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "agencies",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Agency",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/agencies/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "agencies",
+                "1",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Agency",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Premium Real Estate - Updated\",\n    \"email\": \"contact@premium.cz\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/agencies/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "agencies",
+                "1",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Agency",
           "request": {
             "method": "DELETE",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
             ],
             "url": {
-              "raw": "{{base_url}}/api/properties/1/",
-              "host": ["{{base_url}}"],
-              "path": ["api", "properties", "1", ""]
+              "raw": "{{base_url}}/api/properties/agencies/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "agencies",
+                "1",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Communications",
+      "item": [
+        {
+          "name": "List Communications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/communications/?status=sent&property_id={{property_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "communications",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "sent"
+                },
+                {
+                  "key": "property_id",
+                  "value": "{{property_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create Communication",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"property\": {{property_id}},\n    \"agency\": 1,\n    \"subject\": \"Property Viewing Request\",\n    \"initial_message\": \"I would like to schedule a viewing for this property.\",\n    \"status\": \"sent\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/communications/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "communications",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Message to Thread",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"message\": \"Thank you for your quick response. I'm available next Tuesday.\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/communications/1/add_message/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "communications",
+                "1",
+                "add_message",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Text Generation",
+      "item": [
+        {
+          "name": "Generate Property Description",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"text_type\": \"description\",\n    \"language\": \"en\",\n    \"tone\": \"professional\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/properties/{{property_id}}/generate-text/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "properties",
+                "{{property_id}}",
+                "generate-text",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Generate Property Story",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"text_type\": \"story\",\n    \"language\": \"cs\",\n    \"tone\": \"luxury\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/properties/{{property_id}}/generate-text/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "properties",
+                "{{property_id}}",
+                "generate-text",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List AI Generations",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/ai-generations/?property_id={{property_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "ai-generations",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "property_id",
+                  "value": "{{property_id}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Apply Generated Text",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/ai-generations/1/apply/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "ai-generations",
+                "1",
+                "apply",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "AI Advisor Chat",
+      "item": [
+        {
+          "name": "Chat - Free Form",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"message\": \"What renovations would add the most value to this property?\",\n    \"prompt_type\": \"freeform\",\n    \"language\": \"en\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/properties/{{property_id}}/advisor-chat/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "properties",
+                "{{property_id}}",
+                "advisor-chat",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Chat - Predefined (Renovation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"prompt_type\": \"predefined\",\n    \"predefined_prompt_id\": \"renovation_advice\",\n    \"language\": \"cs\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/properties/{{property_id}}/advisor-chat/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "properties",
+                "{{property_id}}",
+                "advisor-chat",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Chat History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/properties/{{property_id}}/advisor-chat/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "properties",
+                "{{property_id}}",
+                "advisor-chat",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "List All Chats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/ai-chats/?property_id={{property_id}}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "ai-chats",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "property_id",
+                  "value": "{{property_id}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Email History",
+      "item": [
+        {
+          "name": "List Emails",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/emails/?property_id={{property_id}}&email_type=inquiry&status=sent",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "emails",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "property_id",
+                  "value": "{{property_id}}"
+                },
+                {
+                  "key": "email_type",
+                  "value": "inquiry"
+                },
+                {
+                  "key": "status",
+                  "value": "sent"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Email Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/properties/emails/1/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "emails",
+                "1",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "File Mode (Export/Import)",
+      "item": [
+        {
+          "name": "Export Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"password\": \"MySecurePassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/data-export/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "data-export",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Import Data",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": []
+                },
+                {
+                  "key": "password",
+                  "value": "MySecurePassword123!",
+                  "type": "text"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{base_url}}/api/properties/data-import/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "properties",
+                "data-import",
+                ""
+              ]
             }
           }
         }
       ]
     }
-  ],
-  "variable": [
-    { "key": "base_url", "value": "http://127.0.0.1:8000" },
-    { "key": "access_token", "value": "" }
   ]
 }
