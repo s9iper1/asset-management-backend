@@ -68,17 +68,24 @@ class AITextService:
             prompt = self._build_prompt(property_obj, text_type, language, tone)
             system_prompt = self._get_system_prompt(text_type, language)
 
-            response = openai.chat.completions.create(
-                model="gpt-4o",  # or "gpt-5" when available
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": prompt}
+            response = openai.responses.create(
+                model=settings.OPENAI_MODEL,
+                reasoning={"effort": "minimal"},  # minimal, low, medium, high
+                input=[
+                    {
+                        "role": "system",
+                        "content": [{"type": "input_text", "text": system_prompt}],
+                    },
+                    {
+                        "role": "user",
+                        "content": [{"type": "input_text", "text": prompt}],
+                    },
                 ],
-                max_tokens=500,
-                temperature=0.7
+                max_output_tokens=500,
+                text={"verbosity": "low"}
             )
 
-            generated_text = response.choices[0].message.content
+            generated_text = response.output_text
             tokens_used = response.usage.total_tokens
 
         except Exception as e:
@@ -98,7 +105,7 @@ class AITextService:
             text_type=text_type,
             prompt=prompt,
             generated_text=generated_text,
-            model_used="gpt-4o",
+            model_used=settings.OPENAI_MODEL,
             cost_credits=cost,
             tokens_used=tokens_used
         )

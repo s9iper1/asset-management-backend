@@ -18,6 +18,9 @@ from corsheaders.defaults import default_headers
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# laod .env
+from dotenv import load_dotenv
+load_dotenv(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -212,6 +215,7 @@ CELERY_TIMEZONE = 'UTC'
 
 # OpenAI Configuration (Phase 1)
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY', '')
+OPENAI_MODEL = os.getenv('OPENAI_MODEL', 'gpt-5-nano-2025-08-07')
 
 # Credit System Configuration (Phase 1)
 CREDIT_COST_AI_TEXT = float(os.getenv('CREDIT_COST_AI_TEXT', '1'))

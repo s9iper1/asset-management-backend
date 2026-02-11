@@ -1,11 +1,12 @@
 """
-AI Advisor Chat Service using OpenAI GPT-5.
+AI Advisor Chat Service using OpenAI GPT-5 Nano (Responses API).
 
 Provides conversational AI assistance for property-related questions.
+Optimized with prompt caching and minimal reasoning for lower cost.
 """
-import openai
+
+from openai import OpenAI
 from django.conf import settings
-from decimal import Decimal
 from apps.properties.models import AIAdvisorChat
 from apps.properties.services.credit_service import CreditService, InsufficientCreditsError
 
@@ -38,9 +39,10 @@ class AIAdvisorService:
     }
 
     def __init__(self):
-        openai.api_key = settings.OPENAI_API_KEY
-        if not openai.api_key:
+        if not settings.OPENAI_API_KEY:
             raise ValueError("OPENAI_API_KEY not configured in settings")
+
+        self.client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
     def chat(self, user, property_obj, message='', prompt_type='freeform',
              predefined_prompt_id=None, language=None):
@@ -73,46 +75,67 @@ class AIAdvisorService:
                 description=f"AI advisor chat for property {property_obj.id}",
                 metadata={'property_id': property_obj.id, 'prompt_type': prompt_type}
             )
-        except InsufficientCreditsError as e:
+        except InsufficientCreditsError:
             raise
 
         # Build user message
         if prompt_type == 'predefined' and predefined_prompt_id:
-            user_message = self.PREDEFINED_PROMPTS.get(predefined_prompt_id, {}).get(language, message)
+            user_message = self.PRE_DEFINED_PROMPTS.get(
+                predefined_prompt_id, {}
+            ).get(language, message)
         else:
             user_message = message
 
-        # STEP 2: Try to get AI response
+        # STEP 2: Get AI response
         try:
             property_context = self._build_property_context(property_obj)
+            system_prompt = self._get_system_prompt(language, property_context)
 
-            # Get recent chat history for context
+            # Recent history (last 5)
             previous_chats = AIAdvisorChat.objects.filter(
                 property=property_obj
             ).order_by('-created_at')[:5]
 
-            conversation_history = []
+            input_items = []
+
+            # System + property context
+            input_items.append({
+                "role": "system",
+                "content": [
+                    {
+                        "type": "input_text",
+                        "text": system_prompt
+                    }
+                ]
+            })
+
+            # Conversation history
             for chat in reversed(list(previous_chats)):
-                conversation_history.extend([
-                    {"role": "user", "content": chat.user_message},
-                    {"role": "assistant", "content": chat.ai_response}
-                ])
+                input_items.append({
+                    "role": "user",
+                    "content": [{"type": "input_text", "text": chat.user_message}]
+                })
+                input_items.append({
+                    "role": "assistant",
+                    "content": [{"type": "output_text", "text": chat.ai_response}]
+                })
+
+            # Current message
+            input_items.append({
+                "role": "user",
+                "content": [{"type": "input_text", "text": user_message}]
+            })
 
             # Call OpenAI
-            messages = [
-                {"role": "system", "content": self._get_system_prompt(language, property_context)},
-                *conversation_history,
-                {"role": "user", "content": user_message}
-            ]
-
-            response = openai.chat.completions.create(
-                model="gpt-4o",
-                messages=messages,
-                max_tokens=800,
-                temperature=0.7
+            response = self.client.responses.create(
+                model=settings.OPENAI_MODEL,
+                reasoning={"effort": "minimal"},
+                max_output_tokens=500,
+                text={"verbosity": "low"},
+                input=input_items
             )
 
-            ai_response = response.choices[0].message.content
+            ai_response = response.output_text
             tokens_used = response.usage.total_tokens
 
         except Exception as e:
@@ -133,7 +156,7 @@ class AIAdvisorService:
             predefined_prompt_id=predefined_prompt_id or '',
             user_message=user_message,
             ai_response=ai_response,
-            model_used="gpt-4o",
+            model_used=settings.OPENAI_MODEL,
             cost_credits=cost,
             tokens_used=tokens_used,
             language=language
@@ -164,17 +187,17 @@ Property Information:
     def _get_system_prompt(self, language, property_context):
         """Get system prompt for AI advisor"""
         prompts = {
-            'en': f"""You are a professional real estate advisor with expertise in property investment, renovation, and market analysis. Help the user with questions about their property.
+            'en': f"""You are a professional real estate advisor with expertise in property investment, renovation, and market analysis.
 
 {property_context}
 
-Provide helpful, accurate advice based on real estate best practices. Be concise but informative. When giving financial advice, remind users to consult with qualified professionals for major decisions.""",
+Provide helpful, accurate advice based on real estate best practices. Be concise but informative. When giving financial advice, remind users to consult qualified professionals for major decisions.""",
 
-            'cs': f"""Jste profesionální poradce v oblasti nemovitostí s odborností v investicích do nemovitostí, renovacích a analýze trhu. Pomáhejte uživateli s dotazy ohledně jeho nemovitosti.
+            'cs': f"""Jste profesionální poradce v oblasti nemovitostí s odborností v investicích do nemovitostí, renovacích a analýze trhu.
 
 {property_context}
 
-Poskytujte užitečné a přesné rady založené na osvědčených postupech v oblasti nemovitostí. Buďte struční, ale informativní. Při poskytování finančních rad připomeňte uživatelům, aby se poradili s kvalifikovanými odborníky pro větší rozhodnutí."""
+Poskytujte užitečné a přesné rady založené na osvědčených postupech v oblasti nemovitostí. Buďte struční, ale informativní. Při finančních doporučeních připomeňte uživatelům, aby se poradili s odborníky."""
         }
 
         return prompts.get(language, prompts['en'])

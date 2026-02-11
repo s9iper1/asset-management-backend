@@ -229,7 +229,7 @@ class CreditTransaction(models.Model):
     balance_after = models.DecimalField(max_digits=10, decimal_places=2)
 
     # Metadata
-    description = models.CharField(max_length=255, blank=True)
+    description = models.TextField(blank=True)
     metadata = models.JSONField(
         default=dict,
         help_text="Additional context (e.g., property_id, payment_id)"

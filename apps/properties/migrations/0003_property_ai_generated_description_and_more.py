@@ -208,7 +208,7 @@ class Migration(migrations.Migration):
                     models.DecimalField(decimal_places=2, max_digits=10),
                 ),
                 ("balance_after", models.DecimalField(decimal_places=2, max_digits=10)),
-                ("description", models.CharField(blank=True, max_length=255)),
+                ("description", models.TextField(blank=True)),
                 (
                     "metadata",
                     models.JSONField(
