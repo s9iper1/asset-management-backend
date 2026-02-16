@@ -6,6 +6,7 @@ mysqlclient
 python-dotenv
 django-cors-headers
 Pillow
+django_extensions # For shell_plus and other utilities
 
 # Phase 1 additions - AI & Async Processing
 openai
