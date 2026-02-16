@@ -7,7 +7,7 @@ from .models import User
 
 @admin.register(User)
 class UserAdmin(BaseUserAdmin):
-    ordering = ("email",)
+    ordering = ("id",)
     list_display = ("id", "email", "name", "is_active", "is_staff", "is_superuser")
     list_filter = ("is_staff", "is_active", "is_superuser")
 
@@ -16,12 +16,14 @@ class UserAdmin(BaseUserAdmin):
         (_("Personal info"), {"fields": ("name",)}),
         (_("Permissions"), {"fields": ("is_active", "is_staff", "is_superuser", "groups", "user_permissions")}),
         (_("Important dates"), {"fields": ("last_login", "date_joined")}),
+        (_("User preferences"), {"fields": ("storage_mode", "preferred_language")}),
+        (_("Credits"), {"fields": ("credit_balance",)}),
     )
 
     add_fieldsets = (
         (None, {
             "classes": ("wide",),
-            "fields": ("email", "name", "password1", "password2", "is_staff", "is_active"),
+            "fields": ("email", "name", "password1", "password2", "is_staff", "is_active", "is_superuser", "storage_mode", "preferred_language", "credit_balance"),
         }),
     )
 
